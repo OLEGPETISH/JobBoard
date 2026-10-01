@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../widgets/job_card.dart';
+import 'job_details_screen.dart';
 
 class JobsScreen extends StatelessWidget {
   const JobsScreen({super.key});
@@ -28,7 +29,15 @@ class JobsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               itemCount: mockJobs.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (_, i) => JobCard(job: mockJobs[i]),
+              itemBuilder: (context, i) => JobCard(
+  job: mockJobs[i],
+  onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => JobDetailsScreen(job: mockJobs[i]),
+    ),
+  ),
+),
             ),
           ),
         ],
