@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/jobs_screen.dart';
 
 void main() => runApp(const JobBoardApp());
 
@@ -16,7 +17,6 @@ class JobBoardApp extends StatelessWidget {
           seedColor: const Color(0xFF1565C0), // деловой синий: карьера, работа
         ),
       ),
-      home: const Scaffold(body: Center(child: Text('JobBoard'))),
-    );
+home: const JobsScreen(),    );
   }
 }
