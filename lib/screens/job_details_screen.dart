@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../widgets/info_row.dart';
+import 'apply_screen.dart';
 
 class JobDetailsScreen extends StatelessWidget {
   final JobPost job;
@@ -97,9 +98,12 @@ class JobDetailsScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: FilledButton(
-            onPressed: () {},
-            child: const Text('Откликнуться'),
-          ),
+  onPressed: () => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => ApplyScreen(job: job)),
+  ),
+  child: const Text('Откликнуться'),
+),
         ),
       ),
     );
