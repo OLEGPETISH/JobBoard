@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../widgets/status_badge.dart';
+import 'application_details_screen.dart';
 
 class MyApplicationsScreen extends StatelessWidget {
   const MyApplicationsScreen({super.key});
@@ -31,6 +32,12 @@ class MyApplicationsScreen extends StatelessWidget {
               title: Text(job.title),
               subtitle: Text('${job.company} · ${application.sentDate}'),
               trailing: StatusBadge(status: application.status),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ApplicationDetailsScreen(application: application),
+                ),
+              ),
             ),
           );
         },
