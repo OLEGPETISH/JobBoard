@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/info_row.dart';
+import 'auth_screen.dart';
+import 'saved_jobs_screen.dart';
+import 'settings_screen.dart';
+
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -102,14 +106,20 @@ class ProfileScreen extends StatelessWidget {
                   leading: const Icon(Icons.bookmark_border),
                   title: const Text('Избранные вакансии'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SavedJobsScreen()),
+                ),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.settings_outlined),
                   title: const Text('Настройки'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                ),
                 ),
               ],
             ),
@@ -122,7 +132,11 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           TextButton(
-            onPressed: () {},
+            onPressed: () => Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const AuthScreen()),
+            (route) => false,
+          ),
             child: Text('Выйти', style: TextStyle(color: scheme.error)),
           ),
         ],

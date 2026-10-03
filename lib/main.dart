@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/jobs_screen.dart';
+import 'screens/auth_screen.dart';
 import 'screens/saved_jobs_screen.dart';
 
 
@@ -19,6 +19,6 @@ class JobBoardApp extends StatelessWidget {
           seedColor: const Color(0xFF1565C0), 
         ),
       ),
-home: const JobsScreen(),    );
+home: const AuthScreen(),   );
   }
 }

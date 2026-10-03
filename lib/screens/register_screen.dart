@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:job_board/screens/main_shell.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -78,8 +79,11 @@ class RegisterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () {},
-              child: const Text('Зарегистрироваться'),
+              onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const MainShell()),
+            ),
+            child: const Text('Зарегистрироваться'),
             ),
             const SizedBox(height: 8),
             TextButton(

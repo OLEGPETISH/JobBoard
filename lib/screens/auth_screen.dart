@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'main_shell.dart';
+import 'register_screen.dart';
 
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
@@ -52,15 +54,21 @@ class AuthScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () {},
-                    child: const Text('Войти'),
+                    onPressed: () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MainShell()),
+                  ),
+                  child: const Text('Войти'),
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
-                  onPressed: () {},
-                  child: const Text('Нет аккаунта? Зарегистрируйтесь'),
+                  onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
                 ),
+                child: const Text('Нет аккаунта? Зарегистрируйтесь'),
+                                ),
               ],
             ),
           ),
