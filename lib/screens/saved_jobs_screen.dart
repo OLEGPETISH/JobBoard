@@ -36,7 +36,7 @@ class SavedJobsScreen extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => JobDetailsScreen(job: saved[i]),
+                    builder: (_) => JobDetailsScreen(id: saved[i].id),
                   ),
                 ),
               ),

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 
 class ApplyScreen extends StatelessWidget {
-  final JobPost job;
+  final int id;
 
-  const ApplyScreen({super.key, required this.job});
+  const ApplyScreen({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
+    final job = mockJobs.firstWhere((j) => j.id == id);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 

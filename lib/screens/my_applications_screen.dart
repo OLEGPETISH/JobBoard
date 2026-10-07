@@ -35,7 +35,7 @@ class MyApplicationsScreen extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ApplicationDetailsScreen(application: application),
+                  builder: (_) => ApplicationDetailsScreen(id: application.id),
                 ),
               ),
             ),

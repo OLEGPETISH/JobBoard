@@ -4,17 +4,18 @@ import '../widgets/info_row.dart';
 import '../widgets/status_badge.dart';
 
 class ApplicationDetailsScreen extends StatelessWidget {
-  final JobApplication application;
+  final int id;
 
-  const ApplicationDetailsScreen({super.key, required this.application});
+  const ApplicationDetailsScreen({super.key, required this.id});
 
   static const _steps = ['Отправлен', 'Просмотрен', 'Интервью'];
 
   @override
   Widget build(BuildContext context) {
+    final application = mockApplications.firstWhere((a) => a.id == id);
+    final job = mockJobs.firstWhere((j) => j.id == application.jobPostId);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final job = mockJobs.firstWhere((j) => j.id == application.jobPostId);
     final rejected = application.status == ApplicationStatus.rejected;
 
     return Scaffold(

@@ -4,12 +4,13 @@ import '../widgets/info_row.dart';
 import 'apply_screen.dart';
 
 class JobDetailsScreen extends StatelessWidget {
-  final JobPost job;
+  final int id;
 
-  const JobDetailsScreen({super.key, required this.job});
+  const JobDetailsScreen({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
+    final job = mockJobs.firstWhere((j) => j.id == id);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 
@@ -94,16 +95,16 @@ class JobDetailsScreen extends StatelessWidget {
             ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
+            bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: FilledButton(
-  onPressed: () => Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => ApplyScreen(job: job)),
-  ),
-  child: const Text('Откликнуться'),
-),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ApplyScreen(id: id)),
+            ),
+            child: const Text('Откликнуться'),
+          ),
         ),
       ),
     );
