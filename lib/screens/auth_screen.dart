@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'main_shell.dart';
-import 'register_screen.dart';
+import 'package:go_router/go_router.dart';
+
 
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
@@ -54,19 +54,13 @@ class AuthScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MainShell()),
-                  ),
+                    onPressed: () => context.go('/jobs'),
                   child: const Text('Войти'),
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
-                  onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                ),
+                  onPressed: () => context.push('/register'),
                 child: const Text('Нет аккаунта? Зарегистрируйтесь'),
                                 ),
               ],

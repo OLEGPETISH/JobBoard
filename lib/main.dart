@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/auth_screen.dart';
-import 'screens/saved_jobs_screen.dart';
-
+import 'router.dart';
 
 void main() => runApp(const JobBoardApp());
 
@@ -10,7 +8,7 @@ class JobBoardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'JobBoard',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -19,6 +17,7 @@ class JobBoardApp extends StatelessWidget {
           seedColor: const Color(0xFF1565C0), 
         ),
       ),
-home: const AuthScreen(),   );
+      routerConfig: router,
+    );
   }
 }

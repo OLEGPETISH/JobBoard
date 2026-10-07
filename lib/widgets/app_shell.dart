@@ -1,33 +1,18 @@
 import 'package:flutter/material.dart';
-import 'jobs_screen.dart';
-import 'saved_jobs_screen.dart';
-import 'my_applications_screen.dart';
-import 'profile_screen.dart';
+import 'package:go_router/go_router.dart';
 
-class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+class AppShell extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
 
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  int _index = 0; // единственное состояние: выбранная вкладка
-
-  static const _screens = [
-    JobsScreen(),
-    SavedJobsScreen(),
-    MyApplicationsScreen(),
-    ProfileScreen(),
-  ];
+  const AppShell({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
+      body: navigationShell,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        selectedIndex: navigationShell.currentIndex,
+        onDestinationSelected: navigationShell.goBranch,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.work_outline),

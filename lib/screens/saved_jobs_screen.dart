@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../data/mock_data.dart';
 import '../widgets/job_card.dart';
-import 'job_details_screen.dart';
 
 class SavedJobsScreen extends StatelessWidget {
   const SavedJobsScreen({super.key});
@@ -33,15 +33,10 @@ class SavedJobsScreen extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, i) => JobCard(
                 job: saved[i],
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => JobDetailsScreen(id: saved[i].id),
-                  ),
-                ),
+                onTap: () => context.go('/jobs/${saved[i].id}'),
               ),
+             ),
             ),
-          ),
         ],
       ),
     );

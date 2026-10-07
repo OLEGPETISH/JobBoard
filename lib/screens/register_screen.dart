@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:job_board/screens/main_shell.dart';
+import 'package:go_router/go_router.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -79,15 +79,12 @@ class RegisterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () => Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const MainShell()),
-            ),
+              onPressed: () => context.go('/jobs'),
             child: const Text('Зарегистрироваться'),
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () {},
+              onPressed: () => context.pop(),
               child: const Text('Уже есть аккаунт? Войти'),
             ),
           ],
