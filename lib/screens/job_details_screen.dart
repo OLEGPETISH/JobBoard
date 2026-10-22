@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/mock_data.dart';
 import '../widgets/info_row.dart';
+import 'package:provider/provider.dart';
+import '../models/saved_jobs_model.dart';
 
 class JobDetailsScreen extends StatelessWidget {
   final int id;
@@ -11,6 +13,7 @@ class JobDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final job = mockJobs.firstWhere((j) => j.id == id);
+    final isSaved = context.watch<SavedJobsModel>().isSaved(id); 
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 
@@ -18,10 +21,10 @@ class JobDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Вакансия'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.bookmark_border),
-            onPressed: () {},
-          ),
+        IconButton(
+        icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
+        onPressed: () => context.read<SavedJobsModel>().toggle(id), // read: действуем
+      ), 
         ],
       ),
       body: ListView(

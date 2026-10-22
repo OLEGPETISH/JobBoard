@@ -13,6 +13,7 @@ import 'widgets/app_shell.dart';
 
 final router = GoRouter(
   initialLocation: '/login',
+  debugLogDiagnostics: true,
   routes: [
     GoRoute(
       path: '/login',

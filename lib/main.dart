@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'models/saved_jobs_model.dart';
 import 'router.dart';
 
-void main() => runApp(const JobBoardApp());
+void main() => runApp(
+      ChangeNotifierProvider(
+        create: (_) => SavedJobsModel(), // фабрика: Provider создаёт лениво и сам делает dispose
+        child: const JobBoardApp(),
+      ),
+    );
 
 class JobBoardApp extends StatelessWidget {
   const JobBoardApp({super.key});
@@ -14,7 +21,7 @@ class JobBoardApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1565C0), 
+          seedColor: const Color(0xFF1565C0), // деловой синий: карьера, работа
         ),
       ),
       routerConfig: router,
