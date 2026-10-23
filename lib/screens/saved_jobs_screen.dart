@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../data/mock_data.dart';
+import '../models/jobs_model.dart';
+import '../widgets/error_view.dart';
 import '../models/saved_jobs_model.dart';
 import '../widgets/job_card.dart';
 
@@ -12,12 +13,23 @@ class SavedJobsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final savedIds = context.watch<SavedJobsModel>().ids; // watch в build
-    final saved = mockJobs.where((j) => savedIds.contains(j.id)).toList();
+    final savedIds = context.watch<SavedJobsModel>().ids; 
+    final jobs = context.watch<JobsModel>();
+    final saved = [
+      for (final id in savedIds)
+        if (jobs.byId(id) != null) jobs.byId(id)!,
+    ];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Избранное')),
-      body: saved.isEmpty
+            body: jobs.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : jobs.error != null
+              ? ErrorView(
+                  message: jobs.error!,
+                  onRetry: () => context.read<JobsModel>().load(),
+                )
+              : saved.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),

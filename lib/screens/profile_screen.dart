@@ -3,12 +3,21 @@ import '../widgets/info_row.dart';
 import 'auth_screen.dart';
 import 'saved_jobs_screen.dart';
 import 'settings_screen.dart';
+import 'package:provider/provider.dart';
+import '../data/mock_application_repository.dart';
+import '../data/mock_job_post_repository.dart';
 
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  // Данные профиля используются только на этом экране
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _simulateFailure = false; 
+
   static const _name = 'Олег Петиш';
   static const _email = 'oleg.petis@isa.utm.md';
   static const _skills = [
@@ -122,6 +131,20 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ),
               ],
+            ),
+          ),
+                    const SizedBox(height: 16),
+          Card(
+            child: SwitchListTile(
+              secondary: const Icon(Icons.cloud_off_outlined),
+              title: const Text('Симулировать сбой сети'),
+              subtitle: const Text('Все запросы к хранилищу будут падать'),
+              value: _simulateFailure,
+              onChanged: (value) {
+                setState(() => _simulateFailure = value);
+                context.read<MockJobPostRepository>().simulateError = value;
+                context.read<MockApplicationRepository>().simulateError = value;
+              },
             ),
           ),
           const SizedBox(height: 16),
