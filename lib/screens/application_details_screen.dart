@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import '../data/mock_data.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../data/job_application.dart';
+import '../models/applications_model.dart';
+import '../models/jobs_model.dart';
+import '../widgets/error_view.dart';
 import '../widgets/info_row.dart';
 import '../widgets/status_badge.dart';
-import '../data/job_application.dart';
 
 class ApplicationDetailsScreen extends StatelessWidget {
   final int id;
@@ -11,12 +15,72 @@ class ApplicationDetailsScreen extends StatelessWidget {
 
   static const _steps = ['Отправлен', 'Просмотрен', 'Интервью'];
 
+  Future<void> _withdraw(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context); 
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Отозвать отклик?'),
+        content: const Text('Отклик будет удалён, это действие нельзя отменить.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Нет'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: const Text('Да, отозвать'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    final error = await context.read<ApplicationsModel>().remove(id);
+    if (!context.mounted) return; 
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+    messenger.showSnackBar(const SnackBar(content: Text('Отклик отозван')));
+    context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final application = mockApplications.firstWhere((a) => a.id == id);
-    final job = mockJobs.firstWhere((j) => j.id == application.jobPostId);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final applications = context.watch<ApplicationsModel>();
+    final jobs = context.watch<JobsModel>();
+
+    final application = applications.byId(id);
+    if (application == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Отклик')),
+        body: applications.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : applications.error != null
+                ? ErrorView(
+                    message: applications.error!,
+                    onRetry: () => context.read<ApplicationsModel>().load(),
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Отклик не существует'),
+                        const SizedBox(height: 12),
+                        FilledButton(
+                          onPressed: () => context.go('/applications'),
+                          child: const Text('К списку откликов'),
+                        ),
+                      ],
+                    ),
+                  ),
+      );
+    }
+
+    final job = jobs.byId(application.jobPostId); 
     final rejected = application.status == ApplicationStatus.rejected;
 
     return Scaffold(
@@ -30,15 +94,16 @@ class ApplicationDetailsScreen extends StatelessWidget {
                 radius: 28,
                 backgroundColor: scheme.primaryContainer,
                 foregroundColor: scheme.onPrimaryContainer,
-                child: Text(job.company[0], style: text.titleLarge),
+                child: Text(job?.company[0] ?? '?', style: text.titleLarge),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(job.title, style: text.titleLarge),
-                    Text(job.company, style: text.bodyLarge),
+                    Text(job?.title ?? 'Вакансия №${application.jobPostId}',
+                        style: text.titleLarge),
+                    Text(job?.company ?? '—', style: text.bodyLarge),
                   ],
                 ),
               ),
@@ -63,17 +128,17 @@ class ApplicationDetailsScreen extends StatelessWidget {
                   InfoRow(
                     icon: Icons.payments_outlined,
                     label: 'Зарплата',
-                    value: job.salaryRange,
+                    value: job?.salaryRange ?? '—',
                   ),
                   InfoRow(
                     icon: Icons.schedule,
                     label: 'График',
-                    value: job.schedule,
+                    value: job?.schedule ?? '—',
                   ),
-                  const InfoRow(
+                  InfoRow(
                     icon: Icons.description_outlined,
                     label: 'CV',
-                    value: 'CV_Student.pdf',
+                    value: application.cvUrl, 
                   ),
                 ],
               ),
@@ -109,6 +174,12 @@ class ApplicationDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text(application.message, style: text.bodyMedium),
             ),
+          ),
+          const SizedBox(height: 24),
+          OutlinedButton.icon(
+            onPressed: () => _withdraw(context),
+            icon: Icon(Icons.delete_outline, color: scheme.error),
+            label: Text('Отозвать отклик', style: TextStyle(color: scheme.error)),
           ),
         ],
       ),
