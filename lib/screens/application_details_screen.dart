@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../widgets/info_row.dart';
 import '../widgets/status_badge.dart';
+import '../data/job_application.dart';
 
 class ApplicationDetailsScreen extends StatelessWidget {
   final int id;

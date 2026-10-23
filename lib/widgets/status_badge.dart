@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/job_application.dart';
 import '../data/mock_data.dart';
 
 class StatusBadge extends StatelessWidget {
