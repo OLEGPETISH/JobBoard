@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/mock_data.dart';
 import '../data/job_post.dart';
-import '../data/mock_data.dart';
-
+import 'package:provider/provider.dart';
+import '../data/job_application.dart';
+import '../models/applications_model.dart';
+import '../models/jobs_model.dart';
 
 class ApplyScreen extends StatefulWidget {
   final int id;
@@ -22,6 +24,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
 
   static const _minMessageLength = 50;
   String? _attachedFile; 
+    bool _sending = false;
 
   @override
   void dispose() {
@@ -39,17 +42,47 @@ class _ApplyScreenState extends State<ApplyScreen> {
     setState(() => _attachedFile = null);
   }
 
-  void _submit(JobPost job) {
-    if (!_formKey.currentState!.validate()) return; 
+    Future<void> _submit(String jobTitle) async {
+    if (!_formKey.currentState!.validate()) return; // валидация L3, нетронута
+
+    final link = _linkCtrl.text.trim();
+    final draft = JobApplication(
+      id: 0, // временный: настоящий id даст хранилище (на L5: сервер)
+      jobPostId: widget.id,
+      cvUrl: link.isNotEmpty ? link : _attachedFile!, // валидатор гарантирует одно из двух
+      message: _messageCtrl.text.trim(),
+      sentDate: '', // дату проставит хранилище
+      status: ApplicationStatus.sent,
+    );
+
+    setState(() => _sending = true);
+    final error = await context.read<ApplicationsModel>().add(draft); // read: действие
+    if (!mounted) return; // экран мог умереть, пока «запрос» летел
+    setState(() => _sending = false);
+
+    if (error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error))); 
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Отклик отправлен: ${job.title}')),
+      SnackBar(content: Text('Отклик отправлен: $jobTitle')),
     );
     context.pop(); 
   }
 
   @override
   Widget build(BuildContext context) {
-    final job = mockJobs.firstWhere((j) => j.id == widget.id);
+    final jobs = context.watch<JobsModel>();
+    final job = jobs.byId(widget.id);
+    if (job == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Отклик на вакансию')),
+        body: jobs.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : const Center(child: Text('Вакансия не существует')),
+      );
+    }
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 
@@ -146,10 +179,16 @@ class _ApplyScreenState extends State<ApplyScreen> {
               },
             ),
             const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => _submit(job),
-              icon: const Icon(Icons.send),
-              label: const Text('Отправить отклик'),
+                        FilledButton.icon(
+              onPressed: _sending ? null : () => _submit(job.title),
+              icon: _sending
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.send),
+              label: Text(_sending ? 'Отправка…' : 'Отправить отклик'),
             ),
           ],
         ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../data/mock_data.dart';
-import '../widgets/info_row.dart';
 import 'package:provider/provider.dart';
+import '../models/jobs_model.dart';
 import '../models/saved_jobs_model.dart';
+import '../widgets/error_view.dart';
+import '../widgets/info_row.dart';
 
 class JobDetailsScreen extends StatelessWidget {
   final int id;
@@ -12,19 +13,52 @@ class JobDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final job = mockJobs.firstWhere((j) => j.id == id);
-    final isSaved = context.watch<SavedJobsModel>().isSaved(id); 
+    final model = context.watch<JobsModel>(); 
+    final job = model.byId(id); 
+    final isSaved = context.watch<SavedJobsModel>().isSaved(id);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+
+    if (job == null) {
+      final Widget content;
+      if (model.isLoading) {
+        content = const Center(child: CircularProgressIndicator()); 
+      } else if (model.error != null) {
+        content = ErrorView(
+          message: model.error!,
+          onRetry: () => context.read<JobsModel>().load(),
+        );
+      } else {
+        content = Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.work_off_outlined, size: 56, color: scheme.outline),
+                const SizedBox(height: 12),
+                Text('Вакансия не существует', style: text.titleMedium),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => context.go('/jobs'),
+                  child: const Text('К списку вакансий'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return Scaffold(appBar: AppBar(title: const Text('Вакансия')), body: content);
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Вакансия'),
         actions: [
-        IconButton(
-        icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
-        onPressed: () => context.read<SavedJobsModel>().toggle(id), // read: действуем
-      ), 
+          IconButton(
+            icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
+            onPressed: () => context.read<SavedJobsModel>().toggle(id), 
+          ),
         ],
       ),
       body: ListView(
@@ -98,7 +132,7 @@ class JobDetailsScreen extends StatelessWidget {
             ),
         ],
       ),
-            bottomNavigationBar: SafeArea(
+      bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: FilledButton(
