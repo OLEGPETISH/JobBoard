@@ -9,6 +9,7 @@ import 'dart:io';
 
 import 'package:conformance/base_checks.dart';
 import 'package:conformance/harness.dart';
+import 'package:conformance/job_post_checks.dart';
 
 Future<void> main(List<String> args) async {
   var baseUrl = 'http://localhost:8080';
@@ -31,6 +32,7 @@ Future<void> main(List<String> args) async {
   }
 
   await runBaseChecks(api, runner);
+  await runJobPostChecks(api, runner);
 
   api.close();
   stdout.writeln('');
