@@ -195,11 +195,12 @@ public class JobPosts {
 		return toJson(find(id));
 	}
 
-	/** DELETE /job-posts/{id} -> 204 | 404. */
+	/** DELETE /job-posts/{id} -> 204 | 404. Отклики на неё удаляются вместе с ней. */
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(@RequestAttribute("userId") long userId, @PathVariable long id) {
 		requireOwner(userId, id);
+		db.jdbc.update("DELETE FROM applications WHERE job_post_id = ?", id);
 		db.jdbc.update("DELETE FROM job_posts WHERE id = ?", id);
 	}
 

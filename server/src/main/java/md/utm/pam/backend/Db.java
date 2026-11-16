@@ -37,7 +37,7 @@ public class Db {
 				  content    TEXT    NOT NULL DEFAULT '',
 				  created_at TEXT    NOT NULL
 				)""");
-		// --- JobBoard: вакансии (общий каталог) ---
+		// --- JobBoard: вакансии (общий каталог) и отклики (на пользователя) ---
 		jdbc.execute("""
 				CREATE TABLE IF NOT EXISTS job_posts (
 				  id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,6 +51,16 @@ public class Db {
 				  description  TEXT    NOT NULL DEFAULT '',
 				  requirements TEXT    NOT NULL DEFAULT '[]',
 				  created_at   TEXT    NOT NULL
+				)""");
+		jdbc.execute("""
+				CREATE TABLE IF NOT EXISTS applications (
+				  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+				  user_id     INTEGER NOT NULL REFERENCES users (id),
+				  job_post_id INTEGER NOT NULL REFERENCES job_posts (id),
+				  cv_url      TEXT    NOT NULL,
+				  message     TEXT    NOT NULL,
+				  status      TEXT    NOT NULL DEFAULT 'sent',
+				  created_at  TEXT    NOT NULL
 				)""");
 		jdbc.execute("""
 				CREATE TABLE IF NOT EXISTS files (

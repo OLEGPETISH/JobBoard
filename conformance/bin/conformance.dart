@@ -7,6 +7,7 @@
 
 import 'dart:io';
 
+import 'package:conformance/application_checks.dart';
 import 'package:conformance/base_checks.dart';
 import 'package:conformance/harness.dart';
 import 'package:conformance/job_post_checks.dart';
@@ -33,6 +34,7 @@ Future<void> main(List<String> args) async {
 
   await runBaseChecks(api, runner);
   await runJobPostChecks(api, runner);
+  await runApplicationChecks(api, runner);
 
   api.close();
   stdout.writeln('');

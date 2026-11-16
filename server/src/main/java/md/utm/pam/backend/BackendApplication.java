@@ -56,7 +56,8 @@ public class BackendApplication implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(auth)
 				.addPathPatterns("/me", "/notes", "/notes/*", "/files",
-						"/job-posts", "/job-posts/*");
+						"/job-posts", "/job-posts/*",
+						"/applications", "/applications/*");
 	}
 
 	/**
