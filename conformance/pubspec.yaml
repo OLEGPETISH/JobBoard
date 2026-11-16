@@ -1,0 +1,6 @@
+name: conformance
+description: Набор тестов соответствия backend-контракту PAM (HTTP, без зависимостей).
+publish_to: none
+
+environment:
+  sdk: ^3.0.0
