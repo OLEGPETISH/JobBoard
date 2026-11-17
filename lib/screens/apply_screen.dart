@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../data/mock_data.dart';
-import '../data/job_post.dart';
 import 'package:provider/provider.dart';
 import '../data/job_application.dart';
 import '../models/applications_model.dart';
