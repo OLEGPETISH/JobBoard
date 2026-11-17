@@ -6,6 +6,8 @@ import 'settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../data/mock_application_repository.dart';
 import '../data/mock_job_post_repository.dart';
+import '../models/applications_model.dart';
+import '../models/jobs_model.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -17,6 +19,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _simulateFailure = false; 
+    @override
+  void initState() {
+    super.initState();
+    _simulateFailure = context.read<MockJobPostRepository>().simulateError;
+  }
 
   static const _name = 'Олег Петиш';
   static const _email = 'oleg.petis@isa.utm.md';
@@ -140,10 +147,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: const Text('Симулировать сбой сети'),
               subtitle: const Text('Все запросы к хранилищу будут падать'),
               value: _simulateFailure,
-              onChanged: (value) {
+                            onChanged: (value) {
                 setState(() => _simulateFailure = value);
                 context.read<MockJobPostRepository>().simulateError = value;
                 context.read<MockApplicationRepository>().simulateError = value;
+                // флаг действует на СЛЕДУЮЩИЙ запрос — запускаем его сразу
+                context.read<JobsModel>().load();
+                context.read<ApplicationsModel>().load();
               },
             ),
           ),
