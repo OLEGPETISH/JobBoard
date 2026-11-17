@@ -8,3 +8,6 @@ build/
 app.db
 app.db-*
 uploads/
+
+# VS Code Java extension output
+bin/
