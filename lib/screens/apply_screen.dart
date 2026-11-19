@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../data/job_application.dart';
 import '../models/applications_model.dart';
 import '../models/jobs_model.dart';
+import 'package:file_picker/file_picker.dart';
+import '../data/file_api.dart';
+import '../data/result.dart';
 
 class ApplyScreen extends StatefulWidget {
   final int id;
@@ -22,7 +25,9 @@ class _ApplyScreenState extends State<ApplyScreen> {
 
   static const _minMessageLength = 50;
   String? _attachedFile; 
-    bool _sending = false;
+  String? _uploadedUrl;
+  bool _uploading = false;
+  bool _sending = false;
 
   @override
   void dispose() {
@@ -31,14 +36,49 @@ class _ApplyScreenState extends State<ApplyScreen> {
     super.dispose();
   }
 
-  void _attachFile() {
-    setState(() => _attachedFile = 'CV_Student.pdf');
-    _linkKey.currentState?.validate(); 
+    static const _maxFileBytes = 5 * 1024 * 1024; // лимит сервера, 5 МБ
+
+  Future<void> _attachFile() async {
+    final picked = await FilePicker.pickFile(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (picked == null) return; // пользователь закрыл выбор
+
+    final size = await picked.length();
+    if (size != null && size > _maxFileBytes) {
+      _snack('Файл больше 5 МБ');
+      return;
+    }
+    final bytes = await picked.readAsBytes();
+    if (!mounted) return;
+
+    setState(() => _uploading = true);
+    final result = await context.read<FileApi>().upload(picked.name, bytes);
+    if (!mounted) return;
+    setState(() => _uploading = false);
+
+    switch (result) {
+      case Ok(:final value):
+        setState(() {
+          _attachedFile = picked.name;
+          _uploadedUrl = value;
+        });
+        _linkKey.currentState?.validate();
+      case Err(:final msg):
+        _snack(msg);
+    }
   }
 
   void _removeFile() {
-    setState(() => _attachedFile = null);
+    setState(() {
+      _attachedFile = null;
+      _uploadedUrl = null;
+    });
   }
+
+  void _snack(String message) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(message)));
 
     Future<void> _submit(String jobTitle) async {
     if (!_formKey.currentState!.validate()) return; // валидация L3, нетронута
@@ -47,7 +87,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
     final draft = JobApplication(
       id: 0, // временный: настоящий id даст хранилище (на L5: сервер)
       jobPostId: widget.id,
-      cvUrl: link.isNotEmpty ? link : _attachedFile!, // валидатор гарантирует одно из двух
+      cvUrl: link.isNotEmpty ? link : _uploadedUrl!,
       message: _messageCtrl.text.trim(),
       sentDate: '', // дату проставит хранилище
       status: ApplicationStatus.sent,
@@ -137,10 +177,16 @@ class _ApplyScreenState extends State<ApplyScreen> {
             const SizedBox(height: 12),
             if (_attachedFile == null)
               OutlinedButton.icon(
-                onPressed: _attachFile,
-                icon: const Icon(Icons.upload_file),
-                label: const Text('Прикрепить файл (PDF)'),
-              )
+              onPressed: _uploading ? null : _attachFile,
+              icon: _uploading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.upload_file),
+              label: Text(_uploading ? 'Загрузка…' : 'Прикрепить файл (PDF)'),
+            )
             else
               Card(
                 child: ListTile(
