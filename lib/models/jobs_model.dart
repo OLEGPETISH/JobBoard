@@ -10,17 +10,25 @@ class JobsModel extends ChangeNotifier {
 
   static const techFilters = ['Flutter', 'Java', 'Python', 'React', 'QA', 'DevOps'];
   static const scheduleFilters = ['Part-time', 'Стажировка', 'Remote'];
+  static const _limit = 20;
 
   bool _loading = false;
+  bool _loadingMore = false;
+  bool _hasMore = false;
+  int _page = 1;
+  int _generation = 0; // растёт при каждой новой загрузке с нуля
   String? _error;
+  String? _moreError;
   List<JobPost> _jobs = const [];
 
-  String _query = '';
+  String _query = ''; // уходит на сервер как ?search=
   final Set<String> _tech = {};
   final Set<String> _schedule = {};
 
   bool get isLoading => _loading;
+  bool get hasMore => _hasMore;
   String? get error => _error;
+  String? get moreError => _moreError;
   List<JobPost> get jobs => List.unmodifiable(_jobs);
 
   String get query => _query;
@@ -29,8 +37,9 @@ class JobsModel extends ChangeNotifier {
   bool get hasFilters =>
       _query.isNotEmpty || _tech.isNotEmpty || _schedule.isNotEmpty;
 
+  // Текст уже отфильтровал сервер; здесь только клиентские чипы.
   List<JobPost> get visibleJobs => List.unmodifiable(
-        _jobs.where((j) => _matchesQuery(j) && _matchesTech(j) && _matchesSchedule(j)),
+        _jobs.where((j) => _matchesTech(j) && _matchesSchedule(j)),
       );
 
   JobPost? byId(int id) {
@@ -40,24 +49,63 @@ class JobsModel extends ChangeNotifier {
     return null;
   }
 
+  /// Первая страница с нуля. Использует текущий _query, поэтому
+  /// «Повторить» после ошибки не теряет поиск.
   Future<void> load() async {
+    final gen = ++_generation;
     _loading = true;
+    _loadingMore = false;
     _error = null;
-    notifyListeners(); 
+    _moreError = null;
+    _page = 1;
+    notifyListeners();
 
-    switch (await _repository.fetchAll()) {
+    final result =
+        await _repository.fetchAll(page: 1, limit: _limit, search: _query);
+    if (gen != _generation) return; // пока ждали, началась более новая загрузка
+
+    switch (result) {
       case Ok(:final value):
         _jobs = value;
+        _hasMore = value.length == _limit; // неполная страница = конец
       case Err(:final msg):
         _error = msg;
+        _hasMore = false;
     }
 
     _loading = false;
-    notifyListeners(); 
+    notifyListeners();
   }
 
-  void setQuery(String value) {
+  /// Поиск на сервере: запоминаем строку и грузим первую страницу заново.
+  Future<void> search(String value) {
     _query = value.trim();
+    return load();
+  }
+
+  /// Следующая страница. Вызывается из itemBuilder, поэтому до await
+  /// notifyListeners() нельзя: это был бы setState во время build.
+  Future<void> loadMore() async {
+    if (_loadingMore || _loading || !_hasMore) return;
+    _loadingMore = true;
+    _moreError = null;
+    final gen = _generation;
+    final next = _page + 1;
+
+    final result =
+        await _repository.fetchAll(page: next, limit: _limit, search: _query);
+    if (gen != _generation) return; // поиск сменился, ответ устарел
+
+    switch (result) {
+      case Ok(:final value):
+        _jobs = [..._jobs, ...value];
+        _page = next;
+        _hasMore = value.length == _limit;
+      case Err(:final msg):
+        _moreError = msg; // список остаётся, в хвосте появится «повторить»
+    }
+
+    _loadingMore = false;
     notifyListeners();
   }
 
@@ -72,18 +120,15 @@ class JobsModel extends ChangeNotifier {
   }
 
   void clearFilters() {
+    final hadQuery = _query.isNotEmpty;
     _query = '';
     _tech.clear();
     _schedule.clear();
-    notifyListeners();
-  }
-
-  bool _matchesQuery(JobPost j) {
-    if (_query.isEmpty) return true;
-    final q = _query.toLowerCase();
-    return j.title.toLowerCase().contains(q) ||
-        j.company.toLowerCase().contains(q) ||
-        j.techStack.any((t) => t.toLowerCase().contains(q));
+    if (hadQuery) {
+      load(); // строка поиска была на сервере, значит, перезагружаем
+    } else {
+      notifyListeners();
+    }
   }
 
   bool _matchesTech(JobPost j) {

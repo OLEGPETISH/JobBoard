@@ -41,9 +41,11 @@ class _JobsScreenState extends State<JobsScreen> {
         message: model.error!, 
         onRetry: () => context.read<JobsModel>().load(), 
       );
-    } else {
-      final jobs = model.visibleJobs; 
-      body = jobs.isEmpty
+        } else {
+      final jobs = model.visibleJobs;
+      // +1 строка под «хвост», пока на сервере есть следующая страница
+      final itemCount = jobs.length + (model.hasMore ? 1 : 0);
+      body = (jobs.isEmpty && !model.hasMore)
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
@@ -69,13 +71,31 @@ class _JobsScreenState extends State<JobsScreen> {
             )
           : ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: jobs.length,
+              itemCount: itemCount,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, i) => JobCard(
-                key: ValueKey(jobs[i].id), 
-                job: jobs[i],
-                onTap: () => context.push('/jobs/${jobs[i].id}'),
-              ),
+              itemBuilder: (context, i) {
+                if (i < jobs.length) {
+                  return JobCard(
+                    key: ValueKey(jobs[i].id),
+                    job: jobs[i],
+                    onTap: () => context.push('/jobs/${jobs[i].id}'),
+                  );
+                }
+                // Хвост: ошибка подгрузки или спиннер + запрос страницы.
+                if (model.moreError != null) {
+                  return Center(
+                    child: TextButton(
+                      onPressed: () => context.read<JobsModel>().loadMore(),
+                      child: const Text('Не удалось загрузить — повторить'),
+                    ),
+                  );
+                }
+                context.read<JobsModel>().loadMore(); // без notify до await
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              },
             );
     }
 
@@ -89,7 +109,7 @@ class _JobsScreenState extends State<JobsScreen> {
               controller: _searchCtrl,
               hintText: 'Название, компания или технология',
               leading: const Icon(Icons.search),
-              onChanged: (value) => context.read<JobsModel>().setQuery(value),
+              onSubmitted: (value) => context.read<JobsModel>().search(value),
             ),
           ),
           _FilterRow(
