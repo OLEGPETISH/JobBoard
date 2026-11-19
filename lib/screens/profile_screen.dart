@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/info_row.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../data/auth_api.dart';
+import '../widgets/info_row.dart';
 import 'saved_jobs_screen.dart';
 import 'settings_screen.dart';
-import 'package:provider/provider.dart';
-import '../data/mock_application_repository.dart';
-import '../data/mock_job_post_repository.dart';
-import '../models/applications_model.dart';
-import '../models/jobs_model.dart';
-
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,16 +14,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _simulateFailure = false; 
-    @override
-  void initState() {
-    super.initState();
-    _simulateFailure = context.read<MockJobPostRepository>().simulateError;
-  }
-    Future<void> _logout() async {
-    await context.read<AuthApi>().logout(); 
+  Future<void> _logout() async {
+    await context.read<AuthApi>().logout(); // пропуск выбрасывается из prefs
     if (!mounted) return;
-    context.go('/login'); 
+    context.go('/login'); // адрес меняется, стек очищается
   }
 
   static const _name = 'Олег Петиш';
@@ -129,9 +118,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: const Text('Избранные вакансии'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SavedJobsScreen()),
-                ),
+                    context,
+                    MaterialPageRoute(builder: (_) => const SavedJobsScreen()),
+                  ),
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -139,28 +128,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: const Text('Настройки'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                ),
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  ),
                 ),
               ],
-            ),
-          ),
-                    const SizedBox(height: 16),
-          Card(
-            child: SwitchListTile(
-              secondary: const Icon(Icons.cloud_off_outlined),
-              title: const Text('Симулировать сбой сети'),
-              subtitle: const Text('Все запросы к хранилищу будут падать'),
-              value: _simulateFailure,
-                            onChanged: (value) {
-                setState(() => _simulateFailure = value);
-                context.read<MockJobPostRepository>().simulateError = value;
-                context.read<MockApplicationRepository>().simulateError = value;
-                // флаг действует на СЛЕДУЮЩИЙ запрос — запускаем его сразу
-                context.read<JobsModel>().load();
-                context.read<ApplicationsModel>().load();
-              },
             ),
           ),
           const SizedBox(height: 16),
@@ -170,7 +142,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: const Text('Редактировать профиль'),
           ),
           const SizedBox(height: 8),
-                    TextButton(
+          TextButton(
             onPressed: _logout,
             child: Text('Выйти', style: TextStyle(color: scheme.error)),
           ),
