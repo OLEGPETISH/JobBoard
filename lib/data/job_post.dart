@@ -43,7 +43,8 @@ class JobPost {
         'description': description,
         'requirements': requirements,
       };
-  copyWith({int? id}) => JobPost(
+
+  JobPost copyWith({int? id}) => JobPost(
         id: id ?? this.id,
         title: title,
         company: company,
