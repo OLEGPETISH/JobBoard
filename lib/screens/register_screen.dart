@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../data/auth_api.dart';
+import '../data/result.dart';
+import '../models/applications_model.dart';
+import '../models/jobs_model.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
+  bool _busy = false;
 
   static const _courses = [
     '1 курс',
@@ -32,12 +38,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return; 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Аккаунт создан: ${_nameCtrl.text.trim()}')),
-    );
-    context.go('/jobs'); 
+    Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return; // валидация L3, нетронута
+    setState(() => _busy = true);
+    final result = await context.read<AuthApi>().register(
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text,
+          _nameCtrl.text.trim(),
+        );
+    if (!mounted) return; // экран мог умереть, пока запрос летел
+    setState(() => _busy = false);
+    switch (result) {
+      case Ok():
+        // Данные теперь принадлежат вошедшему пользователю: грузим заново.
+        context.read<JobsModel>().load();
+        context.read<ApplicationsModel>().load();
+        context.go('/jobs'); // token сохранён — входим в список
+      case Err(:final msg):
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg)));
+    }
   }
 
   @override
@@ -168,9 +188,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _submit,
-                child: const Text('Зарегистрироваться'),
+                FilledButton(
+                onPressed: _busy ? null : _submit,
+                child: _busy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Зарегистрироваться'),
               ),
               const SizedBox(height: 8),
               TextButton(
