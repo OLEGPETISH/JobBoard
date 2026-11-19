@@ -8,10 +8,20 @@ class HttpJobPostRepository implements JobPostRepository {
 
   final ApiClient _api;
 
-  @override
-  Future<Result<List<JobPost>>> fetchAll() => _api.call(
+    @override
+  Future<Result<List<JobPost>>> fetchAll({
+    int page = 1,
+    int limit = 20,
+    String? search,
+  }) =>
+      _api.call(
         'GET',
         '/job-posts',
+        query: {
+          'page': '$page',
+          'limit': '$limit',
+          if (search != null && search.isNotEmpty) 'search': search,
+        },
         parse: (json) {
           final data = json as Map<String, dynamic>; // конверт {items, page, ...}
           return (data['items'] as List)
