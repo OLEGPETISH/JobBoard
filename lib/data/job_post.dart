@@ -21,7 +21,29 @@ class JobPost {
     required this.requirements,
   });
 
-  JobPost copyWith({int? id}) => JobPost(
+  factory JobPost.fromJson(Map<String, dynamic> j) => JobPost(
+        id: j['id'] as int,
+        title: j['title'] as String,
+        company: j['company'] as String,
+        salaryRange: j['salaryRange'] as String? ?? '',
+        techStack: _stringList(j['techStack']),
+        schedule: j['schedule'] as String? ?? '',
+        location: j['location'] as String? ?? '',
+        description: j['description'] as String? ?? '',
+        requirements: _stringList(j['requirements']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'company': company,
+        'salaryRange': salaryRange,
+        'techStack': techStack,
+        'schedule': schedule,
+        'location': location,
+        'description': description,
+        'requirements': requirements,
+      };
+  copyWith({int? id}) => JobPost(
         id: id ?? this.id,
         title: title,
         company: company,
@@ -33,3 +55,6 @@ class JobPost {
         requirements: requirements,
       );
 }
+
+List<String> _stringList(Object? value) =>
+    (value as List? ?? const []).map((e) => e as String).toList();
