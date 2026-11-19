@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../data/auth_api.dart';
+import '../data/result.dart';
+import '../models/applications_model.dart';
+import '../models/jobs_model.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -12,6 +17,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  bool _busy = false;
 
   @override
   void dispose() {
@@ -20,9 +26,25 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _submit() {
+    Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return; 
-    context.go('/jobs'); 
+    if (_busy) return; 
+    setState(() => _busy = true);
+    final result = await context
+        .read<AuthApi>()
+        .login(_emailCtrl.text.trim(), _passwordCtrl.text);
+    if (!mounted) return; 
+    setState(() => _busy = false);
+    switch (result) {
+      case Ok():
+        
+        context.read<JobsModel>().load();
+        context.read<ApplicationsModel>().load();
+        context.go('/jobs'); 
+      case Err(:final msg):
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg)));
+    }
   }
 
   @override
@@ -90,9 +112,15 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _submit,
-                      child: const Text('Войти'),
+                      child: FilledButton(
+                      onPressed: _busy ? null : _submit,
+                      child: _busy
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Войти'),
                     ),
                   ),
                   const SizedBox(height: 8),
