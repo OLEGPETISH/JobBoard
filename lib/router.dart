@@ -11,8 +11,10 @@ import 'screens/saved_jobs_screen.dart';
 import 'screens/settings_screen.dart';
 import 'widgets/app_shell.dart';
 
-final router = GoRouter(
-  initialLocation: '/login',
+late final GoRouter router;
+
+GoRouter createRouter({required bool loggedIn}) => GoRouter(
+  initialLocation: loggedIn ? '/jobs' : '/login',
   debugLogDiagnostics: true,
   routes: [
     GoRoute(
