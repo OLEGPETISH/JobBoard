@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/info_row.dart';
-import 'auth_screen.dart';
+import 'package:go_router/go_router.dart';
+import '../data/auth_api.dart';
 import 'saved_jobs_screen.dart';
 import 'settings_screen.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _simulateFailure = context.read<MockJobPostRepository>().simulateError;
+  }
+    Future<void> _logout() async {
+    await context.read<AuthApi>().logout(); 
+    if (!mounted) return;
+    context.go('/login'); 
   }
 
   static const _name = 'Олег Петиш';
@@ -164,12 +170,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: const Text('Редактировать профиль'),
           ),
           const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const AuthScreen()),
-            (route) => false,
-          ),
+                    TextButton(
+            onPressed: _logout,
             child: Text('Выйти', style: TextStyle(color: scheme.error)),
           ),
         ],
